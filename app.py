@@ -56,6 +56,17 @@ def all_cheese():
     return jsonify({'all_cheese': cheese})
 
 
+
+def getNextSequence(name) {
+   var result = db.counters.find_and_modify(
+          {
+            query: { _id: name },
+            update: { $inc: { seq: 1 } },
+            new: true
+          }
+   );
+
+
 # 유저가 선택한 주메뉴, 빵, 치즈, 소스 data를 db에 생성하는 API
 @app.route('/menu', methods=['POST'])
 def menuPost():
@@ -101,6 +112,18 @@ def mychoice_recent ():
 def all_popular():
     popularchoices = list(db.userchoice.find({}, {'_id': False}).sort("like", -1).limit(10))
     return jsonify({'all_popularchoices': popularchoices})
+
+#좋아요 api
+@app.route('/listing/like', methods=['POST'])
+def like_sandwich():
+    like_receive = request.form['like_give']
+
+    target_sandwich = db.userchoice.find_one({'sandwich': like_receive})
+    current_like = target_sandwich['like']
+
+    new_like = current_like + 1
+    db.mystar.update_one({'sandwich': like_receive}, {'$set': {'like': new_like}})
+    return jsonify({'msg':'좋아요 완료!'})
 
 
 #좋아요 api
